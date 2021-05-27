@@ -27,6 +27,21 @@ def test_getsetitem(tmpdir):
     assert pc["a"] == 42
 
 
+def test_setdefault(tmpdir):
+    filename = os.path.join(tmpdir, "cache")
+    pc = PersistentCache(LRUCache, filename=filename, maxsize=3)
+
+    # insert
+    res = pc.setdefault("a", 42)
+    assert res == 42
+    assert pc.persistent_dict[str(hash("a"))] == ("a", 42)
+
+    # retrieve
+    res = pc.setdefault("a", 42)
+    assert res == 42
+    assert pc.persistent_dict[str(hash("a"))] == ("a", 42)
+
+
 def test_eviction(tmpdir):
     filename = os.path.join(tmpdir, "cache")
     pc = PersistentCache(LRUCache, filename=filename, maxsize=2)
@@ -61,7 +76,8 @@ def test_persistency(tmpdir):
 
     pc2 = PersistentCache(LRUCache, filename=filename, maxsize=2)
     assert "a" not in pc2
-    assert "b" in pc2
+    assert pc2["b"] == 43
+    assert pc2["c"] == 44
 
 
 def test_no_persistency():

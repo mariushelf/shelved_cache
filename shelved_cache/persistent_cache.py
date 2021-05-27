@@ -74,8 +74,17 @@ class PersistentCache:
         self.wrapped[key] = value
         hkey = self.hash_key(key)
         if self.persistent_dict is not None:
+            print(f"Persisting {key}")
             self.persistent_dict[hkey] = (key, value)
             self.persistent_dict.sync()
+
+    def setdefault(self, k, v):
+        try:
+            return self.wrapped[k]
+        except KeyError:
+            print("Adding")
+            self[k] = v
+            return v
 
     def __getitem__(self, item):
         self.initialize_if_not_initialized()
