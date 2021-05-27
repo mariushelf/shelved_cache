@@ -22,8 +22,9 @@ python = "^3.6"
 cachetools = "^4.2.2"
 
 [tool.poetry.dev-dependencies]
-pytest = "^6.1"
 pre-commit = "^2.8"
+pytest = "^6.1"
+pytest-asyncio = "^0.15.1"
 tox = "^3.20.1"
 twine = "^3.2.0"
 
