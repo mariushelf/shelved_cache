@@ -7,9 +7,10 @@ Original repository: [https://github.com/mariushelf/shelved_cache](https://githu
 # Usage example
 
 ```python
-filename = 'mycache'
 from shelved_cache import PersistentCache
 from cachetools import LRUCache
+
+filename = 'mycache'
 
 # create persistency around an LRUCache
 pc = PersistentCache(LRUCache, filename=filename, maxsize=2)
@@ -27,6 +28,28 @@ pc["c"] = 44
 assert "a" not in pc
 ```
 
+## Use as a decorator
+
+Just like a regular `cachetools.Cache`, the `PersistentCache` can be used with
+`cachetools`' `cached` decorator:
+
+```python
+from shelved_cache import PersistentCache
+from cachetools import LRUCache
+
+filename = 'mycache'
+pc = PersistentCache(LRUCache, filename, maxsize=2)
+
+@cachetools.cached(pc)
+def square(x):
+    print("called")
+    return x * x
+
+assert square(3) == 9
+# outputs "called"
+assert square(3) == 9
+# no output because the cache is used
+```
 
 # License
 

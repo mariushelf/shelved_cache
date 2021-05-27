@@ -83,11 +83,10 @@ def test_decorator(tmpdir):
 
     @cachetools.cached(pc)
     def square(x):
+        print("called")
         return x * x
 
     assert square(3) == 9
-
-    # when using a decorator, a tuple of the arguments is used as hashkey
-    argstup = (3,)
-    assert argstup in pc
-    assert PersistentCache.hash_key(argstup) in pc.persistent_dict
+    # outputs "called"
+    assert square(3) == 9
+    # no output because the cache is used
