@@ -1,6 +1,6 @@
 # shelved_cache
 
-Persistent Cache for Python cachetools.
+Persistent Cache implementation for Python cachetools.
 
 Original repository: [https://github.com/mariushelf/shelved_cache](https://github.com/mariushelf/shelved_cache)
 
@@ -26,6 +26,14 @@ pc["c"] = 44
 # "a" should be evicted now because maxsize is 2
 
 assert "a" not in pc
+
+# close the file
+pc.close()
+
+# Now in the same script or in another script, we can re-load the cache:
+pc2 = PersistentCache(LRUCache, filename=filename, maxsize=2)
+assert pc2["b"] == 43
+assert pc2["c"] == 44
 ```
 
 ## Use as a decorator
