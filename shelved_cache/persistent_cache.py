@@ -29,15 +29,17 @@ class PersistentCache:
     If items in the cache are modified without re-adding them to the dict, the
     persistent cache will not be updated.
 
+    Persistency can be deactivated by providing `None` as the filename.
+
     Internally, the `shelve` library is used to implement the cache.
 
     Parameters
     ----------
     wrapped_cache_cls: subclass of `Cache`
         the class of the cache that this PersistentCache should mimic.
-    filename: str
+    filename: str or None
         filename for the persistent cache. A file extension may be appended. See
-        `shelve.open()` for more information.
+        `shelve.open()` for more information. If `None`, persistency is deactivated.
     *args:
         forwarded to the init function of `wrapped_cache_cls`
     *kwargs:
@@ -48,12 +50,17 @@ class PersistentCache:
         new_cls = type(
             f"Wrapped{wrapped_cache_cls.__name__}", (DelMixin, wrapped_cache_cls), {}
         )
-        self.wrapped = new_cls(self.delete_callback, *args, **kwargs)
+        if filename:
+            self.wrapped = new_cls(self.delete_callback, *args, **kwargs)
+        else:
+            # no persistency, hence no callback needed
+            self.wrapped = wrapped_cache_cls(*args, **kwargs)
         self.filename = filename
         self.persistent_dict: Shelf = None
 
     def delete_callback(self, key):
         """ Called when an item is deleted from the wrapped cache """
+        self.initialize_if_not_initialized()
         hkey = self.hash_key(key)
         del self.persistent_dict[hkey]
 
@@ -65,8 +72,9 @@ class PersistentCache:
         self.initialize_if_not_initialized()
         self.wrapped[key] = value
         hkey = self.hash_key(key)
-        self.persistent_dict[hkey] = (key, value)
-        self.persistent_dict.sync()
+        if self.persistent_dict is not None:
+            self.persistent_dict[hkey] = (key, value)
+            self.persistent_dict.sync()
 
     def __getitem__(self, item):
         self.initialize_if_not_initialized()
@@ -81,14 +89,15 @@ class PersistentCache:
         return self.wrapped.__contains__(item)
 
     def initialize_if_not_initialized(self):
-        if self.persistent_dict is None:
+        if self.filename and self.persistent_dict is None:
             self.persistent_dict = shelve.open(self.filename, protocol=5)
             for hk, (k, v) in self.persistent_dict.items():
                 self.wrapped[k] = v
 
     def close(self):
-        self.persistent_dict.close()
-        self.persistent_dict = None
+        if self.persistent_dict is not None:
+            self.persistent_dict.close()
+            self.persistent_dict = None
 
     def __del__(self):
         """Try to tidy up.

@@ -64,6 +64,22 @@ def test_persistency(tmpdir):
     assert "b" in pc2
 
 
+def test_no_persistency():
+    filename = None
+    pc = PersistentCache(LRUCache, filename=filename, maxsize=2)
+    pc["a"] = 42
+    pc["b"] = 43
+    pc["c"] = 44
+    # "a" should be evicted now
+    assert "a" not in pc
+    assert "b" in pc
+    pc.close()
+
+    pc2 = PersistentCache(LRUCache, filename=filename, maxsize=2)
+    assert "a" not in pc2
+    assert "b" not in pc2
+
+
 def test_non_str_key_persistency(tmpdir):
     filename = os.path.join(tmpdir, "cache")
     print(filename)
