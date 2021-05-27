@@ -1,6 +1,7 @@
 # shelved_cache
 
-Persistent Cache implementation for Python cachetools.
+Persistent cache implementation for Python
+[cachetools](https://github.com/tkem/cachetools/).
 
 Behaves like any `Cache` implementation, but entries are persisted to disk.
 
@@ -116,6 +117,13 @@ assert sum([1, 2]) == 3
 # access cache
 assert sum([1, 2]) == 3
 ```
+
+
+# Acknowledgements
+
+* [cachetools](https://github.com/tkem/cachetools/) by Thomas Kemmer
+* [asyncache](https://github.com/hephex/asyncache) by hephex
+
 
 # License
 
