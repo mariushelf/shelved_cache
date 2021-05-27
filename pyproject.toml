@@ -1,0 +1,37 @@
+[tool.poetry]
+name = "shelved_cache"
+version = "0.1.0"
+description = "Persistent Cache for Python cachetools."
+authors = ["Marius Helf <helfsmarius@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+homepage = "https://github.com/mariushelf/shelved_cache"
+repository = "https://github.com/mariushelf/shelved_cache"
+documentation = "https://github.com/mariushelf/shelved_cache"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Programming Language :: Python :: 3.6",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: Implementation :: PyPy"
+]
+
+[tool.poetry.dependencies]
+python = "^3.6"
+cachetools = "^4.2.2"
+
+[tool.poetry.dev-dependencies]
+pytest = "^6.1"
+pre-commit = "^2.8"
+tox = "^3.20.1"
+twine = "^3.2.0"
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+
+[build-system]
+requires = ["poetry>=1.0"]
+build-backend = "poetry.masonry.api"
+

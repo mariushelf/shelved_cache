@@ -1,0 +1,26 @@
+[flake8]
+max-line-length = 88
+ignore = E501, E203, W503, E266, E712
+per-file-ignores = __init__.py:F401
+exclude =
+    # note: exclude is not being used by the pre-commit hooks.
+    # Use the `exclude` entry in .pre-commit-config.yaml instead
+    .git,
+    __pycache__,
+    setup.py,
+    build,
+    dist,
+    releases,
+    .venv,
+    venv,
+    .tox,
+    .mypy_cache,
+    .pytest_cache,
+    .vscode,
+    .github,
+    .idea,
+    poetry/utils/_compat.py,
+    tests/fixtures/,
+    tests/repositories/fixtures/,
+    tests/utils/fixtures/,
+
