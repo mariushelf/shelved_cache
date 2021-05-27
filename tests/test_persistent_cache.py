@@ -64,7 +64,6 @@ def test_non_string_keys(tmpdir):
 
 def test_persistency(tmpdir):
     filename = os.path.join(tmpdir, "cache")
-    print(filename)
     pc = PersistentCache(LRUCache, filename=filename, maxsize=2)
     pc["a"] = 42
     pc["b"] = 43
@@ -98,7 +97,6 @@ def test_no_persistency():
 
 def test_non_str_key_persistency(tmpdir):
     filename = os.path.join(tmpdir, "cache")
-    print(filename)
     pc = PersistentCache(LRUCache, filename=filename, maxsize=2)
     pc[23] = 42
     pc[24] = 43
