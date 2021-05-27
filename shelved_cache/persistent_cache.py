@@ -1,3 +1,4 @@
+import pickle
 import shelve
 from shelve import Shelf
 from typing import Any, Callable, Type
@@ -90,7 +91,9 @@ class PersistentCache:
 
     def initialize_if_not_initialized(self):
         if self.filename and self.persistent_dict is None:
-            self.persistent_dict = shelve.open(self.filename, protocol=5)
+            self.persistent_dict = shelve.open(
+                self.filename, protocol=pickle.HIGHEST_PROTOCOL
+            )
             for hk, (k, v) in self.persistent_dict.items():
                 self.wrapped[k] = v
 
