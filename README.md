@@ -2,6 +2,8 @@
 
 Persistent Cache implementation for Python cachetools.
 
+Behaves like any `Cache` implementation, but entries are persisted to disk.
+
 Original repository: [https://github.com/mariushelf/shelved_cache](https://github.com/mariushelf/shelved_cache)
 
 # Usage example
@@ -15,25 +17,21 @@ filename = 'mycache'
 # create persistency around an LRUCache
 pc = PersistentCache(LRUCache, filename=filename, maxsize=2)
 
-# we can now use the cache like a normal LRUCache:
+# we can now use the cache like a normal LRUCache.
+# But: the cache is persisted to disk.
 pc["a"] = 42
 pc["b"] = 43
 
 assert pc["a"] == 42
 assert pc["b"] == 43
 
-pc["c"] = 44
-# "a" should be evicted now because maxsize is 2
-
-assert "a" not in pc
-
 # close the file
 pc.close()
 
 # Now in the same script or in another script, we can re-load the cache:
 pc2 = PersistentCache(LRUCache, filename=filename, maxsize=2)
+assert pc2["a"] == 42
 assert pc2["b"] == 43
-assert pc2["c"] == 44
 ```
 
 ## Use as a decorator
