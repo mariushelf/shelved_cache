@@ -32,10 +32,9 @@ import functools
 import inspect
 
 from cachetools import cachedmethod, keys
-
-__all__ = ["cached"]
-
 from cachetools.keys import hashkey
+
+__all__ = ["asynccached", "cachedasyncmethod"]
 
 
 class nullcontext:
@@ -58,7 +57,7 @@ class nullcontext:
         return None
 
 
-def cached(cache, key=keys.hashkey, lock=None):
+def asynccached(cache, key=keys.hashkey, lock=None):
     """
     Decorator to wrap a function or a coroutine with a memoizing callable
     that saves results in a cache.
