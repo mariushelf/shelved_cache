@@ -35,9 +35,16 @@ def test_eviction(tmpdir):
     pc["c"] = 44
     # "a" should be evicted now
     assert "a" not in pc
-    assert "a" not in pc.persistent_dict
+    assert PersistentCache.hash_key("a") not in pc.persistent_dict
     assert "b" in pc
-    assert "b" in pc.persistent_dict
+    assert PersistentCache.hash_key("b") in pc.persistent_dict
+
+
+def test_non_string_keys(tmpdir):
+    filename = os.path.join(tmpdir, "cache")
+    pc = PersistentCache(LRUCache, filename=filename, maxsize=3)
+    pc[23] = 42
+    assert pc[23] == 42
 
 
 def test_persistency(tmpdir):
@@ -57,6 +64,19 @@ def test_persistency(tmpdir):
     assert "b" in pc2
 
 
+def test_non_str_key_persistency(tmpdir):
+    filename = os.path.join(tmpdir, "cache")
+    print(filename)
+    pc = PersistentCache(LRUCache, filename=filename, maxsize=2)
+    pc[23] = 42
+    pc[24] = 43
+    pc.close()
+
+    pc2 = PersistentCache(LRUCache, filename=filename, maxsize=2)
+    assert pc2[23] == 42
+    assert pc2[24] == 43
+
+
 def test_decorator(tmpdir):
     filename = os.path.join(tmpdir, "cache")
     pc = PersistentCache(LRUCache, filename, maxsize=2)
@@ -66,5 +86,8 @@ def test_decorator(tmpdir):
         return x * x
 
     assert square(3) == 9
-    assert 3 in pc
-    assert 3 in pc.persistent_dict
+
+    # when using a decorator, a tuple of the arguments is used as hashkey
+    argstup = (3,)
+    assert argstup in pc
+    assert PersistentCache.hash_key(argstup) in pc.persistent_dict

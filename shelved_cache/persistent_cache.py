@@ -54,12 +54,18 @@ class PersistentCache:
 
     def delete_callback(self, key):
         """ Called when an item is deleted from the wrapped cache """
-        del self.persistent_dict[key]
+        hkey = self.hash_key(key)
+        del self.persistent_dict[hkey]
+
+    @staticmethod
+    def hash_key(key):
+        return str(hash(key))
 
     def __setitem__(self, key, value):
         self.initialize_if_not_initialized()
         self.wrapped[key] = value
-        self.persistent_dict[key] = value
+        hkey = self.hash_key(key)
+        self.persistent_dict[hkey] = (key, value)
         self.persistent_dict.sync()
 
     def __getitem__(self, item):
@@ -77,7 +83,7 @@ class PersistentCache:
     def initialize_if_not_initialized(self):
         if self.persistent_dict is None:
             self.persistent_dict = shelve.open(self.filename, protocol=5)
-            for k, v in self.persistent_dict.items():
+            for hk, (k, v) in self.persistent_dict.items():
                 self.wrapped[k] = v
 
     def close(self):
