@@ -18,7 +18,7 @@ classifiers = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.6"
+python = "^3.6.1"
 cachetools = "^4.2.2"
 
 [tool.poetry.dev-dependencies]

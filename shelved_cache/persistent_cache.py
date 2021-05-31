@@ -1,9 +1,14 @@
+import logging
+import os
 import pickle
 import shelve
+from pathlib import Path
 from shelve import Shelf
 from typing import Any, Callable, Type
 
 from cachetools import Cache
+
+logger = logging.getLogger(__name__)
 
 
 class DelMixin:
@@ -71,18 +76,16 @@ class PersistentCache:
 
     def __setitem__(self, key, value):
         self.initialize_if_not_initialized()
-        self.wrapped[key] = value
         hkey = self.hash_key(key)
         if self.persistent_dict is not None:
-            print(f"Persisting {key}")
             self.persistent_dict[hkey] = (key, value)
             self.persistent_dict.sync()
+        self.wrapped[key] = value
 
     def setdefault(self, k, v):
         try:
             return self.wrapped[k]
         except KeyError:
-            print("Adding")
             self[k] = v
             return v
 
@@ -100,11 +103,33 @@ class PersistentCache:
 
     def initialize_if_not_initialized(self):
         if self.filename and self.persistent_dict is None:
-            self.persistent_dict = shelve.open(
-                self.filename, protocol=pickle.HIGHEST_PROTOCOL
-            )
-            for hk, (k, v) in self.persistent_dict.items():
-                self.wrapped[k] = v
+            # create cache directory if not exists
+            dir = Path(self.filename).parent
+            os.makedirs(dir, exist_ok=True)
+
+            # load or create database file
+            try:
+                self.persistent_dict = shelve.open(
+                    self.filename, protocol=pickle.HIGHEST_PROTOCOL, flag="c"
+                )
+                for hk, (k, v) in self.persistent_dict.items():
+                    self.wrapped[k] = v
+                logger.debug(
+                    f"Loaded {len(self.persistent_dict)} cache entries from {self.filename} (in cache: {len(self.wrapped)})."
+                )
+            except pickle.UnpicklingError:
+                # create a new cache file
+                logger.warning(
+                    f"Failed to open cache database file {self.filename}. Overwriting with a new one."
+                )
+                self.persistent_dict = shelve.open(
+                    self.filename,
+                    protocol=pickle.HIGHEST_PROTOCOL,
+                    flag="n",
+                )
+                keys = self.wrapped.keys()
+                for key in keys:
+                    del self.wrapped[key]
 
     def close(self):
         if self.persistent_dict is not None:
