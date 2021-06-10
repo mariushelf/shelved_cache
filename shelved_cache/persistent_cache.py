@@ -68,7 +68,10 @@ class PersistentCache:
         """ Called when an item is deleted from the wrapped cache """
         self.initialize_if_not_initialized()
         hkey = self.hash_key(key)
-        del self.persistent_dict[hkey]
+        try:
+            del self.persistent_dict[hkey]
+        except KeyError:
+            logger.warning(f"Key '{hkey}' not in persistent cache.")
 
     @staticmethod
     def hash_key(key):
