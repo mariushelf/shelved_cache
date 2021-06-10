@@ -1,7 +1,7 @@
 SHELL := /bin/bash
 
 install:
-	poetry install
+	poetry update
 
 clean:
 	rm -rf dist
