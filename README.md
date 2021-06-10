@@ -1,4 +1,4 @@
-# shelved_cache
+# Shelved Cache
 
 Persistent cache implementation for Python
 [cachetools](https://github.com/tkem/cachetools/).
@@ -118,6 +118,11 @@ assert sum([1, 2]) == 3
 assert sum([1, 2]) == 3
 ```
 
+
+# Changelog
+
+## 0.2.1
+* improved error handling
 
 # Acknowledgements
 
