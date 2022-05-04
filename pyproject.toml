@@ -18,15 +18,16 @@ classifiers = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.6.1"
-cachetools = "^4.2.2"
+python = "^3.7.0,<4"
+cachetools = "^4.2.2|^5.0.0"
 
 [tool.poetry.dev-dependencies]
 pre-commit = "^2.8"
-pytest = "^6.1"
+pytest = "^7.1.1"
 pytest-asyncio = "^0.15.1"
+pytest-cov = "^3.0.0"
 tox = "^3.20.1"
-twine = "^3.2.0"
+twine = "^4.0.0"
 
 [tool.isort]
 profile = "black"
@@ -36,3 +37,11 @@ multi_line_output = 3
 requires = ["poetry-core>=1.0"]
 build-backend = "poetry.core.masonry.api"
 
+# pytest configuration
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "--doctest-modules --doctest-continue-on-failure -rA --cov=shelved_cache --cov-report term --cov-report xml:coverage.xml --junitxml=report.xml"
+testpaths = [
+    "tests",
+    "shelved_cache",
+]
