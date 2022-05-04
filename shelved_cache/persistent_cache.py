@@ -2,9 +2,10 @@ import logging
 import os
 import pickle
 import shelve
+from collections import MutableMapping
 from pathlib import Path
 from shelve import Shelf
-from typing import Any, Callable, Type
+from typing import Any, Callable, Iterator, Type
 
 from cachetools import Cache
 
@@ -12,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 
 class DelMixin:
-    """ Mixin that calls a callback after each call to the `__delitem__()` function. """
+    """Mixin that calls a callback after each call to the `__delitem__()` function."""
 
     def __init__(self, delete_callback: Callable[[str], Any], *args, **kwargs):
         self.delete_callback = delete_callback
@@ -23,7 +24,7 @@ class DelMixin:
         self.delete_callback(key)
 
 
-class PersistentCache:
+class PersistentCache(MutableMapping):
     """Behaves like a subclass of `cachetools.Cache`, but keeps a persistent copy
     of the cache on disk.
 
@@ -65,7 +66,7 @@ class PersistentCache:
         self.persistent_dict: Shelf = None
 
     def delete_callback(self, key):
-        """ Called when an item is deleted from the wrapped cache """
+        """Called when an item is deleted from the wrapped cache"""
         self.initialize_if_not_initialized()
         hkey = self.hash_key(key)
         try:
@@ -99,6 +100,10 @@ class PersistentCache:
     def __getattr__(self, item):
         self.initialize_if_not_initialized()
         return getattr(self.wrapped, item)
+
+    def __delitem__(self, v) -> None:
+        self.initialize_if_not_initialized()
+        del self.persistent_dict[v]
 
     def __contains__(self, item):
         self.initialize_if_not_initialized()
@@ -148,3 +153,11 @@ class PersistentCache:
             self.persistent_dict = None
         except Exception:
             pass
+
+    def __len__(self) -> int:
+        self.initialize_if_not_initialized()
+        return len(self.persistent_dict)
+
+    def __iter__(self) -> Iterator:
+        self.initialize_if_not_initialized()
+        return iter(self.persistent_dict)
