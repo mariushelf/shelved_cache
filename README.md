@@ -41,6 +41,7 @@ Just like a regular `cachetools.Cache`, the `PersistentCache` can be used with
 `cachetools`' `cached` decorator:
 
 ```python
+import cachetools
 from shelved_cache import PersistentCache
 from cachetools import LRUCache
 
