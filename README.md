@@ -126,6 +126,13 @@ assert sum([1, 2]) == 3
 
 # Changelog
 
+## 0.3.0
+
+* add support for Python 3.10 and 3.11
+* better error message when trying to use the same file for multiple caches
+* CI/CD pipeline
+* fixes for documentation
+
 ## 0.2.1
 * improved error handling
 
