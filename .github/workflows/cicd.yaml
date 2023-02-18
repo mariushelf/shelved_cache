@@ -58,8 +58,8 @@ jobs:
         export PATH=$PATH:$HOME/.local/bin
     - name: Check tag and version match
       run: |
-        if [ "refs/tags/`poetry version -s`" != "${{ github.ref_name }}" ]; then
-          echo Tag $GITHUB_REF does not match package version `poetry version -s`.
+        if [ "`poetry version -s`" != "${{ github.ref_name }}" ]; then
+          echo Tag ${{ github.ref_name }} does not match package version `poetry version -s`.
           exit 1
         else
           echo Package version and tag match.
