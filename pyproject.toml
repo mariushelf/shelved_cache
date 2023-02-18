@@ -10,10 +10,11 @@ repository = "https://github.com/mariushelf/shelved_cache"
 documentation = "https://github.com/mariushelf/shelved_cache"
 classifiers = [
     "Development Status :: 4 - Beta",
-    "Programming Language :: Python :: 3.6",
     "Programming Language :: Python :: 3.7",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: Implementation :: PyPy"
 ]
 
@@ -22,11 +23,11 @@ python = "^3.7.0,<4"
 cachetools = "^4.2.2|^5.0.0"
 
 [tool.poetry.dev-dependencies]
-pre-commit = "^2.8"
+pre-commit = "^2.8.0"
 pytest = "^7.1.1"
-pytest-asyncio = "^0.15.1"
-pytest-cov = "^3.0.0"
-tox = "^3.20.1"
+pytest-asyncio = "^0.20.3"
+pytest-cov = "^4.0.0"
+tox = "^4.4.5"
 twine = "^4.0.0"
 
 [tool.isort]
@@ -34,7 +35,7 @@ profile = "black"
 multi_line_output = 3
 
 [build-system]
-requires = ["poetry-core>=1.0"]
+requires = ["poetry-core>=1.4"]
 build-backend = "poetry.core.masonry.api"
 
 # pytest configuration

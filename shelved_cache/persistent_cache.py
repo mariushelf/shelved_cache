@@ -2,7 +2,7 @@ import logging
 import os
 import pickle
 import shelve
-from collections import MutableMapping
+from collections.abc import MutableMapping
 from pathlib import Path
 from shelve import Shelf
 from typing import Any, Callable, Iterator, Type

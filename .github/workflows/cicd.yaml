@@ -1,0 +1,74 @@
+name: CI/CD
+
+on: # events that trigger our pipeline: push on any branch and release creation
+  push:
+  release:
+    types: [published]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version:
+          - "3.7"
+          - "3.8"
+          - "3.9"
+          - "3.10"
+          - "3.11"
+          - "pypy-3.7"
+          - "pypy-3.8"
+          - "pypy-3.9"
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v3
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install dependencies
+      run: |
+        curl -sSL https://install.python-poetry.org | python3 -
+        export PATH=$PATH:$HOME/.local/bin
+        poetry install
+    - name: Run pytest
+      run: |
+        poetry run pytest --cov-report=xml --cov=shelved_cache tests
+    - name: "Upload coverage to Codecov"
+      uses: codecov/codecov-action@v2
+      with:
+        fail_ci_if_error: true
+#        token: ${{ secrets.CODECOV_TOKEN }} # not required for public repos
+  build-n-publish:
+    environment: production
+    name: Build and publish Python distributions to PyPI
+    needs: test
+    if: github.event_name == 'release' && github.event.action == 'published'
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v3
+      with:
+        python-version: 3.10
+    - name: Install poetry
+      run: |
+        curl -sSL https://install.python-poetry.org | python3 -
+        export PATH=$PATH:$HOME/.local/bin
+    - name: Check tag and version match
+      run: |
+        if [ "v`poetry version -s`" != "${{ github.ref_name }}" ]; then
+          echo Tag $GITHUB_REF does not match package version `poetry version -s`.
+          exit 1
+        else
+          echo Package version and tag match.
+        fi
+    - name: Build package
+      run: poetry build
+    - name: Publish package to PyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
+      repository_url: https://test.pypi.org/legacy/
+      with:
+        user: __token__
+        password: ${{ secrets.PYPI_API_TOKEN }}
