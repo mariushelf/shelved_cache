@@ -7,6 +7,7 @@ from pathlib import Path
 from shelve import Shelf
 from typing import Any, Callable, Iterator, Type
 
+import _gdbm
 from cachetools import Cache
 
 logger = logging.getLogger(__name__)
@@ -22,6 +23,10 @@ class DelMixin:
     def __delitem__(self, key):
         super().__delitem__(key)
         self.delete_callback(key)
+
+
+class ShelvedCacheError(Exception):
+    pass
 
 
 class PersistentCache(MutableMapping):
@@ -138,6 +143,16 @@ class PersistentCache(MutableMapping):
                 keys = self.wrapped.keys()
                 for key in keys:
                     del self.wrapped[key]
+            except _gdbm.error as e:
+                if e.errno == 11:
+                    # "resource temporarily unavailable"
+                    raise ShelvedCacheError(
+                        "Resource temporarily unavailable when trying to open "
+                        f'file "{e.filename}". '
+                        f"Did you try to use the same file for multiple caches?"
+                    )
+                else:
+                    raise
 
     def close(self):
         if self.persistent_dict is not None:
