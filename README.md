@@ -126,6 +126,10 @@ assert sum([1, 2]) == 3
 
 # Changelog
 
+## 0.3.1
+* fix for Windows users
+* add Windows and MacOS to test suite
+
 ## 0.3.0
 
 * add support for Python 3.10 and 3.11
