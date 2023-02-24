@@ -1,3 +1,4 @@
+import dbm
 import logging
 import os
 import pickle
@@ -7,7 +8,6 @@ from pathlib import Path
 from shelve import Shelf
 from typing import Any, Callable, Iterator, Type
 
-import _gdbm
 from cachetools import Cache
 
 logger = logging.getLogger(__name__)
@@ -132,27 +132,22 @@ class PersistentCache(MutableMapping):
                 )
             except pickle.UnpicklingError:
                 # create a new cache file
-                logger.warning(
-                    f"Failed to open cache database file {self.filename}. Overwriting with a new one."
-                )
-                self.persistent_dict = shelve.open(
-                    self.filename,
-                    protocol=pickle.HIGHEST_PROTOCOL,
-                    flag="n",
-                )
-                keys = self.wrapped.keys()
-                for key in keys:
-                    del self.wrapped[key]
-            except _gdbm.error as e:
-                if e.errno == 11:
-                    # "resource temporarily unavailable"
+                self._destroy_and_reinit_cache()
+            except ValueError as e:
+                # cache has been created with higher pickle protocol
+                if "unsupported pickle protocol" in str(e):
+                    self._destroy_and_reinit_cache()
+            except dbm.error as e:
+                # cache has been created with newer python version
+                if "db type is dbm.gnu, but the module is not available" in str(e):
+                    self._destroy_and_reinit_cache()
+            except Exception as e:
+                if "Resource temporarily unavailable" in str(e):
                     raise ShelvedCacheError(
-                        "Resource temporarily unavailable when trying to open "
-                        f'file "{e.filename}". '
-                        f"Did you try to use the same file for multiple caches?"
+                        "Resource temporarily unavailable. "
+                        "Did you try to use the same file for multiple caches?"
                     )
-                else:
-                    raise
+                raise e
 
     def close(self):
         if self.persistent_dict is not None:
@@ -176,3 +171,16 @@ class PersistentCache(MutableMapping):
     def __iter__(self) -> Iterator:
         self.initialize_if_not_initialized()
         return iter(self.persistent_dict)
+
+    def _destroy_and_reinit_cache(self):
+        logger.warning(
+            f"Failed to open cache database file {self.filename}. Overwriting with a new one."
+        )
+        self.persistent_dict = shelve.open(
+            self.filename,
+            protocol=pickle.HIGHEST_PROTOCOL,
+            flag="n",
+        )
+        keys = self.wrapped.keys()
+        for key in keys:
+            del self.wrapped[key]
