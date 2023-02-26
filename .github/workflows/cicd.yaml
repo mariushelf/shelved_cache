@@ -54,7 +54,9 @@ jobs:
   build-n-publish:
     environment: production
     name: Build and publish Python distributions to PyPI
-    needs: test, lint
+    needs:
+      - test
+      - lint
     if: github.event_name == 'release' && github.event.action == 'published'
     runs-on: ubuntu-latest
     steps:
