@@ -6,6 +6,18 @@ on: # events that trigger our pipeline: push on any branch and release creation
     types: [published]
 
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v3
+        with:
+          python-version: "3.10"
+      - name: Install dependencies
+        run: pip install pre-commit
+      - name: Run pre-commit hooks
+        run: pre-commit run --all-files
   test:
     strategy:
       fail-fast: false
@@ -42,7 +54,7 @@ jobs:
   build-n-publish:
     environment: production
     name: Build and publish Python distributions to PyPI
-    needs: test
+    needs: test, lint
     if: github.event_name == 'release' && github.event.action == 'published'
     runs-on: ubuntu-latest
     steps:
