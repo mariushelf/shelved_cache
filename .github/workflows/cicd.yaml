@@ -6,6 +6,18 @@ on: # events that trigger our pipeline: push on any branch and release creation
     types: [published]
 
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.7"  # lowest supported version
+      - name: Install dependencies
+        run: pip install pre-commit
+      - name: Run pre-commit hooks
+        run: pre-commit run --all-files
   test:
     strategy:
       fail-fast: false
@@ -24,13 +36,18 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v3
+      uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
     - name: Install dependencies
-      run: |
-        pip install poetry
-        poetry install
+      # windows runners can be a bit moody here, so we retry this
+      uses: nick-fields/retry@v2
+      with:
+        max_attempts: 3
+        timeout_minutes: 5
+        command: |
+          pip install poetry
+          poetry install
     - name: Run pytest
       run: |
         poetry run pytest --cov-report=xml --cov=shelved_cache tests
@@ -42,13 +59,15 @@ jobs:
   build-n-publish:
     environment: production
     name: Build and publish Python distributions to PyPI
-    needs: test
+    needs:
+      - test
+      - lint
     if: github.event_name == 'release' && github.event.action == 'published'
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
     - name: Set up Python 3.10
-      uses: actions/setup-python@v3
+      uses: actions/setup-python@v4
       with:
         python-version: "3.10"
     - name: Install poetry
