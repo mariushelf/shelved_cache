@@ -3,6 +3,7 @@
 [![Tests](https://github.com/mariushelf/shelved_cache/actions/workflows/cicd.yaml/badge.svg)](https://github.com/mariushelf/shelved_cache/actions/workflows/cicd.yaml)
 [![codecov](https://codecov.io/gh/mariushelf/shelved_cache/branch/master/graph/badge.svg)](https://codecov.io/gh/mariushelf/shelved_cache)
 [![PyPI version](https://badge.fury.io/py/shelved_cache.svg)](https://pypi.org/project/shelved_cache/)
+[![Downloads](https://static.pepy.tech/badge/shelved-cache/month)](https://pepy.tech/project/shelved-cache)
 
 Persistent cache implementation for Python
 [cachetools](https://github.com/tkem/cachetools/).
