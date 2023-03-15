@@ -16,7 +16,9 @@ logger = logging.getLogger(__name__)
 class DelMixin:
     """Mixin that calls a callback after each call to the `__delitem__()` function."""
 
-    def __init__(self, delete_callback: Callable[[str], Any], *args, **kwargs):
+    def __init__(
+        self, delete_callback: Callable[[str], Any], *args: Any, **kwargs: Any
+    ) -> None:
         self.delete_callback = delete_callback
         super().__init__(*args, **kwargs)  # type: ignore
 
@@ -58,7 +60,9 @@ class PersistentCache(MutableMapping):
         forwarded to the init function of `wrapped_cache_cls`
     """
 
-    def __init__(self, wrapped_cache_cls: Type[Cache], filename: str, *args, **kwargs):
+    def __init__(
+        self, wrapped_cache_cls: Type[Cache], filename: str, *args, **kwargs
+    ) -> None:
         new_cls = type(
             f"Wrapped{wrapped_cache_cls.__name__}", (DelMixin, wrapped_cache_cls), {}
         )
@@ -161,7 +165,7 @@ class PersistentCache(MutableMapping):
         try:
             self.persistent_dict.close()
             self.persistent_dict = None
-        except Exception:
+        except Exception:  # noqa: S110
             pass
 
     def __len__(self) -> int:
