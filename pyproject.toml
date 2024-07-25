@@ -18,6 +18,11 @@ classifiers = [
     "Programming Language :: Python :: Implementation :: PyPy"
 ]
 
+# Workaround for https://github.com/python-poetry/poetry/issues/9293
+[[tool.poetry.source]]
+name = "pypi-public"
+url = "https://pypi.org/simple/"
+
 [tool.poetry.dependencies]
 python = "^3.7.0,<4"
 cachetools = "^4.2.2|^5.0.0"
