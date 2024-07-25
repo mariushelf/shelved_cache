@@ -43,17 +43,21 @@ assert pc2["b"] == 43
 ## Use as a decorator
 
 Just like a regular `cachetools.Cache`, the `PersistentCache` can be used with
-`cachetools`' `cached` decorator:
+the `persistent_cached` decorator:
+
+> [!WARNING]
+> Do not use `cachetools`' `cached` decorator with the persistent cache, or you will experience functions with the same 
+> signature returning the wrong values.
 
 ```python
-import cachetools
+from shelved_cache.decorators import persistent_cached
 from shelved_cache import PersistentCache
 from cachetools import LRUCache
 
 filename = 'mycache'
 pc = PersistentCache(LRUCache, filename, maxsize=2)
 
-@cachetools.cached(pc)
+@persistent_cached(pc)
 def square(x):
     print("called")
     return x * x
