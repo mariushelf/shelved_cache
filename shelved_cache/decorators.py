@@ -30,6 +30,7 @@ SOFTWARE.
 """
 import functools
 import inspect
+from typing import MutableMapping, ContextManager, Callable, Optional, AsyncContextManager
 
 from cachetools import keys
 
@@ -56,7 +57,7 @@ class nullcontext:
         return None
 
 
-def persistent_cached(cache, key=keys.hashkey, lock=None):
+def persistent_cached(cache: MutableMapping, key: Callable = keys.hashkey, lock: ContextManager = None):
     lock = lock or nullcontext()
 
     def decorator(func):
@@ -84,7 +85,9 @@ def persistent_cached(cache, key=keys.hashkey, lock=None):
 
     return decorator
 
-def persistent_cachedmethod(cache, key=keys.methodkey, lock=None):
+
+def persistent_cachedmethod(cache: Callable[[object], Optional[MutableMapping]], key: Callable = keys.methodkey,
+                            lock: ContextManager = None):
     lock = lock or (lambda self: nullcontext())
 
     def decorator(method):
@@ -115,7 +118,8 @@ def persistent_cachedmethod(cache, key=keys.methodkey, lock=None):
 
     return decorator
 
-def asynccached(cache, key=keys.hashkey, lock=None):
+
+def asynccached(cache: MutableMapping, key=keys.hashkey, lock: AsyncContextManager | ContextManager = None):
     """
     Decorator to wrap a function or a coroutine with a memoizing callable
     that saves results in a cache.
@@ -176,7 +180,7 @@ def asynccached(cache, key=keys.hashkey, lock=None):
     return decorator
 
 
-def cachedasyncmethod(cache, key=keys.methodkey, lock=None):
+def cachedasyncmethod(cache: Callable[[object], Optional[MutableMapping]], key: Callable = keys.methodkey, lock: AsyncContextManager | ContextManager = None):
     """Decorator to wrap a class or instance method with a memoizing
     callable that saves results in a cache.
 
