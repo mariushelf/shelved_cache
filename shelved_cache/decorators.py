@@ -31,10 +31,9 @@ SOFTWARE.
 import functools
 import inspect
 
-from cachetools import cachedmethod, keys
-from cachetools.keys import hashkey
+from cachetools import keys
 
-__all__ = ["asynccached", "cachedasyncmethod"]
+__all__ = ["persistent_cached", "persistent_cachedmethod", "asynccached", "cachedasyncmethod"]
 
 
 class nullcontext:
@@ -57,6 +56,65 @@ class nullcontext:
         return None
 
 
+def persistent_cached(cache, key=keys.hashkey, lock=None):
+    lock = lock or nullcontext()
+
+    def decorator(func):
+        def wrapper(*args, **kwargs):
+            k = key(*args, **kwargs, __pc_function__name=func.__qualname__)
+            try:
+                with lock:
+                    return cache[k]
+
+            except KeyError:
+                pass  # key not found
+
+            val = func(*args, **kwargs)
+
+            try:
+                with lock:
+                    cache[k] = val
+
+            except ValueError:
+                pass  # val too large
+
+            return val
+
+        return functools.wraps(func)(wrapper)
+
+    return decorator
+
+def persistent_cachedmethod(cache, key=keys.methodkey, lock=None):
+    lock = lock or (lambda self: nullcontext())
+
+    def decorator(method):
+        def wrapper(self, *args, **kwargs):
+            c = cache(self)
+            if c is None:
+                return method(self, *args, **kwargs)
+            k = key(self, *args, **kwargs, __pc_function__name=method.__qualname__)
+            try:
+                with lock(self):
+                    return c[k]
+
+            except KeyError:
+                pass  # key not found
+
+            v = method(self, *args, **kwargs)
+
+            try:
+                with lock(self):
+                    return c.setdefault(k, v)
+
+            except ValueError:
+                pass  # val too large
+
+            return v
+
+        return functools.update_wrapper(wrapper, method)
+
+    return decorator
+
 def asynccached(cache, key=keys.hashkey, lock=None):
     """
     Decorator to wrap a function or a coroutine with a memoizing callable
@@ -72,7 +130,7 @@ def asynccached(cache, key=keys.hashkey, lock=None):
         if inspect.iscoroutinefunction(func):
 
             async def wrapper(*args, **kwargs):
-                k = key(*args, **kwargs)
+                k = key(*args, **kwargs, __pc_function__name=func.__qualname__)
                 try:
                     async with lock:
                         return cache[k]
@@ -94,7 +152,7 @@ def asynccached(cache, key=keys.hashkey, lock=None):
         else:
 
             def wrapper(*args, **kwargs):
-                k = key(*args, **kwargs)
+                k = key(*args, **kwargs, __pc_function__name=func.__qualname__)
                 try:
                     with lock:
                         return cache[k]
@@ -118,7 +176,7 @@ def asynccached(cache, key=keys.hashkey, lock=None):
     return decorator
 
 
-def cachedasyncmethod(cache, key=hashkey, lock=None):
+def cachedasyncmethod(cache, key=keys.methodkey, lock=None):
     """Decorator to wrap a class or instance method with a memoizing
     callable that saves results in a cache.
 
@@ -132,23 +190,23 @@ def cachedasyncmethod(cache, key=hashkey, lock=None):
                 c = cache(self)
                 if c is None:
                     return await method(self, *args, **kwargs)
-                k = key(*args, **kwargs)
+                k = key(self, *args, **kwargs, __pc_function__name=method.__qualname__)
                 try:
-                    with lock(self):
+                    async with lock(self):
                         return c[k]
                 except KeyError:
                     pass  # key not found
                 v = await method(self, *args, **kwargs)
                 # in case of a race, prefer the item already in the cache
                 try:
-                    with lock(self):
+                    async with lock(self):
                         return c.setdefault(k, v)
                 except ValueError:
                     return v  # value too large
 
             return functools.update_wrapper(wrapper, method)
         else:
-            decorator = cachedmethod(cache, key, lock)
+            decorator = persistent_cachedmethod(cache, key, lock)
             return decorator(method)
 
     return decorator

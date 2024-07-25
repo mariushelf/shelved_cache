@@ -1,10 +1,11 @@
 import os
 import tempfile
+from asyncio import Lock
 
-import cachetools
 import pytest
 from cachetools import LRUCache
 
+from shelved_cache.decorators import persistent_cached, asynccached, cachedasyncmethod
 from shelved_cache.persistent_cache import PersistentCache
 
 
@@ -111,12 +112,171 @@ def test_decorator(tmpdir):
     filename = os.path.join(tmpdir, "cache")
     pc = PersistentCache(LRUCache, filename, maxsize=2)
 
-    @cachetools.cached(pc)
+    square_calls = 0
+    cube_calls = 0
+
+    @persistent_cached(pc)
     def square(x):
-        print("called")
+        nonlocal square_calls
+        square_calls += 1
         return x * x
 
+    @persistent_cached(pc)
+    def cube(x):
+        nonlocal cube_calls
+        cube_calls += 1
+        return x * x * x
+
+
     assert square(3) == 9
-    # outputs "called"
     assert square(3) == 9
-    # no output because the cache is used
+    assert square_calls == 1
+
+    assert cube(3) == 27
+    assert cube(3) == 27
+    assert cube_calls == 1
+
+@pytest.mark.asyncio
+async def test_async_decorator(tmpdir):
+    filename = os.path.join(tmpdir, "cache")
+    pc = PersistentCache(LRUCache, filename, maxsize=2)
+
+    lock = Lock()
+    square_calls = 0
+    cube_calls = 0
+
+    @asynccached(pc)
+    async def square(x):
+        nonlocal square_calls
+
+        async with lock:
+            square_calls += 1
+
+        return x * x
+
+    @asynccached(pc)
+    async def cube(x):
+        nonlocal cube_calls
+
+        async with lock:
+            cube_calls += 1
+
+        return x * x * x
+
+
+    assert await square(3) == 9
+    assert await square(3) == 9
+    assert square_calls == 1
+
+    assert await cube(3) == 27
+    assert await cube(3) == 27
+    assert cube_calls == 1
+
+@pytest.mark.asyncio
+async def test_wrong_async_decorator(tmpdir):
+    """
+    Tests asynccached on a function that is not async
+    """
+
+    filename = os.path.join(tmpdir, "cache")
+    pc = PersistentCache(LRUCache, filename, maxsize=2)
+
+    square_calls = 0
+    cube_calls = 0
+
+    @asynccached(pc)
+    def square(x):
+        nonlocal square_calls
+        square_calls += 1
+        return x * x
+
+    @asynccached(pc)
+    def cube(x):
+        nonlocal cube_calls
+        cube_calls += 1
+        return x * x * x
+
+
+    assert square(3) == 9
+    assert square(3) == 9
+    assert square_calls == 1
+
+    assert cube(3) == 27
+    assert cube(3) == 27
+    assert cube_calls == 1
+
+
+@pytest.mark.asyncio
+async def test_asyncmethod_decorator(tmpdir):
+    filename = os.path.join(tmpdir, "cache")
+    pc = PersistentCache(LRUCache, filename, maxsize=2)
+
+    lock = Lock()
+    square_calls = 0
+    cube_calls = 0
+
+    class MyClass:
+        @cachedasyncmethod(lambda _: pc)
+        async def square(self, x):
+            nonlocal square_calls
+
+            async with lock:
+                square_calls += 1
+
+            return x * x
+
+        @cachedasyncmethod(lambda _: pc)
+        async def cube(self, x):
+            nonlocal cube_calls
+
+            async with lock:
+                cube_calls += 1
+
+            return x * x * x
+
+    my_object = MyClass()
+
+    assert await my_object.square(3) == 9
+    assert await my_object.square(3) == 9
+    assert square_calls == 1
+
+    assert await my_object.cube(3) == 27
+    assert await my_object.cube(3) == 27
+    assert cube_calls == 1
+
+@pytest.mark.asyncio
+async def test_wrong_asyncmethod_decorator(tmpdir):
+    """
+    Tests cachedasyncmethod on a method that is not async
+    """
+
+    filename = os.path.join(tmpdir, "cache")
+    pc = PersistentCache(LRUCache, filename, maxsize=2)
+
+    square_calls = 0
+    cube_calls = 0
+
+    class MyClass:
+        @cachedasyncmethod(lambda _: pc)
+        def square(self, x):
+            nonlocal square_calls
+            square_calls += 1
+            return x * x
+
+        lock = Lock()
+
+        @cachedasyncmethod(lambda _: pc)
+        def cube(self, x):
+            nonlocal cube_calls
+            cube_calls += 1
+            return x * x * x
+
+    my_object = MyClass()
+
+    assert my_object.square(3) == 9
+    assert my_object.square(3) == 9
+    assert square_calls == 1
+
+    assert my_object.cube(3) == 27
+    assert my_object.cube(3) == 27
+    assert cube_calls == 1
