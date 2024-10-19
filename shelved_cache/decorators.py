@@ -32,7 +32,7 @@ import functools
 import inspect
 
 from cachetools import cachedmethod, keys
-from cachetools.keys import hashkey
+from cachetools.keys import hashkey, methodkey
 
 __all__ = ["asynccached", "cachedasyncmethod"]
 
@@ -118,7 +118,7 @@ def asynccached(cache, key=keys.hashkey, lock=None):
     return decorator
 
 
-def cachedasyncmethod(cache, key=hashkey, lock=None):
+def cachedasyncmethod(cache, key=methodkey, lock=None):
     """Decorator to wrap a class or instance method with a memoizing
     callable that saves results in a cache.
 
@@ -132,16 +132,16 @@ def cachedasyncmethod(cache, key=hashkey, lock=None):
                 c = cache(self)
                 if c is None:
                     return await method(self, *args, **kwargs)
-                k = key(*args, **kwargs)
+                k = key(self, *args, **kwargs)
                 try:
-                    with lock(self):
+                    async with lock(self):
                         return c[k]
                 except KeyError:
                     pass  # key not found
                 v = await method(self, *args, **kwargs)
                 # in case of a race, prefer the item already in the cache
                 try:
-                    with lock(self):
+                    async with lock(self):
                         return c.setdefault(k, v)
                 except ValueError:
                     return v  # value too large
