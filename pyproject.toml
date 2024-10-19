@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "shelved_cache"
-version = "0.3.1"
+version = "0.4.0"
 description = "Persistent cache for Python cachetools."
 authors = ["Marius Helf <helfsmarius@gmail.com>"]
 license = "MIT"
