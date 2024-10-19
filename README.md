@@ -1,3 +1,5 @@
+from shelved_cache import PersistentCache
+
 # Shelved Cache
 
 [![Tests](https://github.com/mariushelf/shelved_cache/actions/workflows/cicd.yaml/badge.svg)](https://github.com/mariushelf/shelved_cache/actions/workflows/cicd.yaml)
@@ -64,6 +66,29 @@ assert square(3) == 9
 # no output because the cache is used
 ```
 
+## Note: decorating multiple functions
+
+If you want to decorate multiple functions, you need to use a
+new instance of `PersistentCache` for each function.
+Make sure that each cache uses a different file name.
+
+
+```python
+import cachetools
+from shelved_cache import PersistentCache
+from cachetools import LRUCache
+
+@cachetools.cached(PersistentCache(LRUCache, "square.cache", maxsize=100))
+def square(x):
+    return x * x
+
+@cachetools.cached(PersistentCache(LRUCache, "cube.cache", maxsize=100))
+def cube(x):
+    return x * x * x
+
+assert square(2) == 4
+assert cube(2) == 8
+```
 
 # Features
 
