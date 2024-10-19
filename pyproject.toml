@@ -19,7 +19,7 @@ classifiers = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.7.0,<4"
+python = "^3.9.0,<4"
 cachetools = "^4.2.2|^5.0.0"
 
 [tool.poetry.group.dev.dependencies]
