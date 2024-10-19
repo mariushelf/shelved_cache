@@ -120,3 +120,20 @@ def test_decorator(tmpdir):
     # outputs "called"
     assert square(3) == 9
     # no output because the cache is used
+
+
+@pytest.mark.xfail(reason="Use a new instance of PersistentCache for every function")
+def test_two_function_same_cache(tmpdir):
+    filename = os.path.join(tmpdir, "cache")
+    pc = PersistentCache(LRUCache, filename, maxsize=1000)
+
+    @cachetools.cached(pc)  # bad, do not do this. Use a new instance for every function
+    def square(x):
+        return x * x
+
+    @cachetools.cached(pc)  # bad, do not do this. Use a new instance for every function
+    def cube(x):
+        return x * x * x
+
+    assert square(2) == 4
+    assert cube(2) == 8, "if this is 4, cube() uses the same cache as square()"
