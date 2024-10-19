@@ -32,7 +32,7 @@ import functools
 import inspect
 
 from cachetools import cachedmethod, keys
-from cachetools.keys import hashkey, methodkey
+from cachetools.keys import methodkey
 
 __all__ = ["asynccached", "cachedasyncmethod"]
 
