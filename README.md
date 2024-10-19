@@ -152,6 +152,13 @@ assert sum([1, 2]) == 3
 
 # Changelog
 
+## 0.4.0
+* drop support for Python 3.7 and 3.8
+* add support for Python 3.12 and 3.13
+  * note: shelved_cache does not seem to work with Python 3.13 on Windows
+* note about decorating multiple functions in the README
+* improvement in async decorators
+
 ## 0.3.1
 * fix for Windows users
 * add Windows and MacOS to test suite
