@@ -6,7 +6,7 @@ import shelve
 from collections.abc import MutableMapping
 from pathlib import Path
 from shelve import Shelf
-from typing import Any, Callable, Iterator, Type
+from typing import Any, Callable, Iterator, Type, Union
 
 from cachetools import Cache
 
@@ -63,7 +63,7 @@ class PersistentCache(MutableMapping):
     def __init__(
         self,
         wrapped_cache_cls: Type[Cache],
-        filename: str | os.PathLike[str],
+        filename: Union[str, os.PathLike[str]],
         *args: Any,
         **kwargs: Any,
     ) -> None:
