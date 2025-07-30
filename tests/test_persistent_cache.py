@@ -1,5 +1,6 @@
 import os
 import tempfile
+from pathlib import Path
 
 import cachetools
 import pytest
@@ -20,9 +21,13 @@ def tmpdir():
         yield d
 
 
-@pytest.fixture
-def cache_filename(tmpdir):
-    return os.path.join(tmpdir, "cache")
+@pytest.fixture(params=["string", "path"])
+def cache_filename(tmpdir, request):
+    cache_path = os.path.join(tmpdir, "cache")
+    if request.param == "string":
+        return cache_path
+    elif request.param == "path":
+        return Path(cache_path)
 
 
 def test_getsetitem(cache_filename):
