@@ -35,6 +35,8 @@ jobs:
         exclude:
             - python-version: "3.13"
               platform: windows-latest  # permission errors in this combination
+            - python-version: "pypy-3.11"
+              platform: ubuntu-latest  # package errors
     runs-on: ${{ matrix.platform }}
     steps:
     - uses: actions/checkout@v3
