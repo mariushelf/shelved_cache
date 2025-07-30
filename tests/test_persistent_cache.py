@@ -20,16 +20,19 @@ def tmpdir():
         yield d
 
 
-def test_getsetitem(tmpdir):
-    filename = os.path.join(tmpdir, "cache")
-    pc = PersistentCache(LRUCache, filename=filename, maxsize=3)
+@pytest.fixture
+def cache_filename(tmpdir):
+    return os.path.join(tmpdir, "cache")
+
+
+def test_getsetitem(cache_filename):
+    pc = PersistentCache(LRUCache, filename=cache_filename, maxsize=3)
     pc["a"] = 42
     assert pc["a"] == 42
 
 
-def test_setdefault(tmpdir):
-    filename = os.path.join(tmpdir, "cache")
-    pc = PersistentCache(LRUCache, filename=filename, maxsize=3)
+def test_setdefault(cache_filename):
+    pc = PersistentCache(LRUCache, filename=cache_filename, maxsize=3)
 
     # insert
     res = pc.setdefault("a", 42)
@@ -42,9 +45,8 @@ def test_setdefault(tmpdir):
     assert pc.persistent_dict[str(hash("a"))] == ("a", 42)
 
 
-def test_eviction(tmpdir):
-    filename = os.path.join(tmpdir, "cache")
-    pc = PersistentCache(LRUCache, filename=filename, maxsize=2)
+def test_eviction(cache_filename):
+    pc = PersistentCache(LRUCache, filename=cache_filename, maxsize=2)
     pc["a"] = 42
     pc["b"] = 43
     pc["c"] = 44
@@ -55,16 +57,14 @@ def test_eviction(tmpdir):
     assert PersistentCache.hash_key("b") in pc.persistent_dict
 
 
-def test_non_string_keys(tmpdir):
-    filename = os.path.join(tmpdir, "cache")
-    pc = PersistentCache(LRUCache, filename=filename, maxsize=3)
+def test_non_string_keys(cache_filename):
+    pc = PersistentCache(LRUCache, filename=cache_filename, maxsize=3)
     pc[23] = 42
     assert pc[23] == 42
 
 
-def test_persistency(tmpdir):
-    filename = os.path.join(tmpdir, "cache")
-    pc = PersistentCache(LRUCache, filename=filename, maxsize=2)
+def test_persistency(cache_filename):
+    pc = PersistentCache(LRUCache, filename=cache_filename, maxsize=2)
     pc["a"] = 42
     pc["b"] = 43
     pc["c"] = 44
@@ -73,7 +73,7 @@ def test_persistency(tmpdir):
     assert "b" in pc
     pc.close()
 
-    pc2 = PersistentCache(LRUCache, filename=filename, maxsize=2)
+    pc2 = PersistentCache(LRUCache, filename=cache_filename, maxsize=2)
     assert "a" not in pc2
     assert pc2["b"] == 43
     assert pc2["c"] == 44
@@ -95,21 +95,19 @@ def test_no_persistency():
     assert "b" not in pc2
 
 
-def test_non_str_key_persistency(tmpdir):
-    filename = os.path.join(tmpdir, "cache")
-    pc = PersistentCache(LRUCache, filename=filename, maxsize=2)
+def test_non_str_key_persistency(cache_filename):
+    pc = PersistentCache(LRUCache, filename=cache_filename, maxsize=2)
     pc[23] = 42
     pc[24] = 43
     pc.close()
 
-    pc2 = PersistentCache(LRUCache, filename=filename, maxsize=2)
+    pc2 = PersistentCache(LRUCache, filename=cache_filename, maxsize=2)
     assert pc2[23] == 42
     assert pc2[24] == 43
 
 
-def test_decorator(tmpdir):
-    filename = os.path.join(tmpdir, "cache")
-    pc = PersistentCache(LRUCache, filename, maxsize=2)
+def test_decorator(cache_filename):
+    pc = PersistentCache(LRUCache, cache_filename, maxsize=2)
 
     @cachetools.cached(pc)
     def square(x):
@@ -123,9 +121,8 @@ def test_decorator(tmpdir):
 
 
 @pytest.mark.xfail(reason="Use a new instance of PersistentCache for every function")
-def test_two_function_same_cache(tmpdir):
-    filename = os.path.join(tmpdir, "cache")
-    pc = PersistentCache(LRUCache, filename, maxsize=1000)
+def test_two_function_same_cache(cache_filename):
+    pc = PersistentCache(LRUCache, cache_filename, maxsize=1000)
 
     @cachetools.cached(pc)  # bad, do not do this. Use a new instance for every function
     def square(x):
