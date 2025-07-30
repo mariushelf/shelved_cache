@@ -72,10 +72,13 @@ class PersistentCache(MutableMapping):
         )
         if filename:
             self.wrapped = new_cls(self.delete_callback, *args, **kwargs)
+            self.filename = str(
+                filename
+            )  # Python 3.9 does not support Posix paths in the cache
         else:
             # no persistency, hence no callback needed
             self.wrapped = wrapped_cache_cls(*args, **kwargs)
-        self.filename = filename
+            self.filename = None
         self.persistent_dict: Shelf = None
 
     def delete_callback(self, key):
