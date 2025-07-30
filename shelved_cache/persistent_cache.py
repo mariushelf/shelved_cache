@@ -61,7 +61,11 @@ class PersistentCache(MutableMapping):
     """
 
     def __init__(
-        self, wrapped_cache_cls: Type[Cache], filename: str, *args, **kwargs
+        self,
+        wrapped_cache_cls: Type[Cache],
+        filename: str | os.PathLike[str],
+        *args: Any,
+        **kwargs: Any,
     ) -> None:
         new_cls = type(
             f"Wrapped{wrapped_cache_cls.__name__}", (DelMixin, wrapped_cache_cls), {}
