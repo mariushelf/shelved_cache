@@ -152,6 +152,10 @@ assert sum([1, 2]) == 3
 
 # Changelog
 
+## Upcoming
+* add support for cachetools ^6.0.0
+* drop support for Python 3.9
+
 ## 0.4.0
 * drop support for Python 3.7 and 3.8
 * add support for Python 3.12 and 3.13
