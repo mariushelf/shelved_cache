@@ -149,12 +149,18 @@ assert sum([1, 2]) == 3
 assert sum([1, 2]) == 3
 ```
 
+# Known issues
+
+shelved-cache seems to run into permission errors on Windows machines
+with Python versions 3.13 and above.
+
 
 # Changelog
 
 ## Upcoming
 * add support for cachetools ^6.0.0
 * drop support for Python 3.9
+* add tests for Python 3.14
 
 ## 0.4.0
 * drop support for Python 3.7 and 3.8
