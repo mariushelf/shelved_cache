@@ -155,34 +155,6 @@ shelved-cache seems to run into permission errors on Windows machines
 with Python versions 3.13 and above.
 
 
-# Changelog
-
-## Upcoming
-* add support for cachetools ^6.0.0
-* drop support for Python 3.9
-* add tests for Python 3.14
-
-## 0.4.0
-* drop support for Python 3.7 and 3.8
-* add support for Python 3.12 and 3.13
-  * note: shelved_cache does not seem to work with Python 3.13 on Windows
-* note about decorating multiple functions in the README
-* improvement in async decorators
-
-## 0.3.1
-* fix for Windows users
-* add Windows and MacOS to test suite
-
-## 0.3.0
-
-* add support for Python 3.10 and 3.11
-* better error message when trying to use the same file for multiple caches
-* CI/CD pipeline
-* fixes for documentation
-
-## 0.2.1
-* improved error handling
-
 # Acknowledgements
 
 * [cachetools](https://github.com/tkem/cachetools/) by Thomas Kemmer
