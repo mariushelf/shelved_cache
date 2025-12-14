@@ -13,7 +13,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.9"  # lowest supported version
+          python-version: "3.10"  # lowest supported version
       - name: Install dependencies
         run: pip install pre-commit
       - name: Run pre-commit hooks
@@ -23,14 +23,17 @@ jobs:
       fail-fast: false
       matrix:
         python-version:
-          - "3.9"
           - "3.10"
           - "3.11"
           - "3.12"
           - "3.13"
-          - "pypy-3.9"
+          - "3.14"
           - "pypy-3.10"
           - "pypy-3.11"
+        cachetools-version:
+          - "4.2.2"
+          - "5.0.0"
+          - "6.0.0"
         platform: [ubuntu-latest, macos-latest, windows-latest]
         exclude:
             - python-version: "3.13"
@@ -53,6 +56,7 @@ jobs:
         command: |
           pip install poetry
           poetry install
+          pip install cachetools==${{ matrix.cachetools-version }}
     - name: Run pytest
       run: |
         poetry run pytest --cov-report=xml --cov=shelved_cache tests
